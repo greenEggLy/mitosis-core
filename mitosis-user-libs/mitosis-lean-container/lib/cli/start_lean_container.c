@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -80,8 +81,8 @@ static inline int test_setup_lean_container(char *name, int namespace, char *roo
 
 
 int main(int argc, char* argv[]) {
-    if (argc < 6) {
-        printf("Usage: %s [container name] [/path/to/rootfs] [command (absolute path)] [command opts]\n", argv[0]);
+    if (argc < 7) {
+        printf("Usage: %s [container name] [/path/to/report_file] [/path/to/rootfs] [command (absolute path)] [command opts]\n", argv[0]);
         return -1;
     }
     
@@ -89,8 +90,17 @@ int main(int argc, char* argv[]) {
     int parallel = atoi(argv[2]);
     
     char* name = argv[3];
-    char* rootfs_path = argv[4];
-    char* command = argv[5];
+    char* report = argv[4];
+    char* rootfs_path = argv[5];
+    char* command = argv[6];
+
+    int out_fd = open(report, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (out_fd == -1) {
+        perror("open outputfile error");
+        return 1;
+    } else {
+        printf("Open result file:%s, fd: %d", report, out_fd);
+    }
 
     sleep(1);
     
@@ -168,7 +178,7 @@ int main(int argc, char* argv[]) {
     clock_gettime(CLOCK_REALTIME, &now);
 
     long elapsed_time = get_passed_nanosecond(&start, &now);
-    printf("total: run %ld containers in %.2f second(s)\n", count, elapsed_time / NANOSECONDS_IN_SECOND);
+    dprintf(out_fd, "total: run %d containers in %.2f second(s)\n", count, elapsed_time / NANOSECONDS_IN_SECOND);
 
 clean:
     if (parallel == 0) {
