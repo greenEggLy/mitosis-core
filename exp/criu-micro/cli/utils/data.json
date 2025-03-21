@@ -1,0 +1,62 @@
+[
+    {
+        "Title": "Movie 1",
+        "MovieId": 7479,
+        "Genre": "Action",
+        "Year": 1999
+    },
+    {
+        "Title": "Movie 2",
+        "MovieId": 9681,
+        "Genre": "Sci-Fi",
+        "Year": 1985
+    },
+    {
+        "Title": "Movie 3",
+        "MovieId": 4978,
+        "Genre": "Action",
+        "Year": 1982
+    },
+    {
+        "Title": "Movie 4",
+        "MovieId": 5610,
+        "Genre": "Sci-Fi",
+        "Year": 1994
+    },
+    {
+        "Title": "Movie 5",
+        "MovieId": 7194,
+        "Genre": "Drama",
+        "Year": 2021
+    },
+    {
+        "Title": "Movie 6",
+        "MovieId": 8423,
+        "Genre": "Horror",
+        "Year": 1999
+    },
+    {
+        "Title": "Movie 7",
+        "MovieId": 5322,
+        "Genre": "Sci-Fi",
+        "Year": 1990
+    },
+    {
+        "Title": "Movie 8",
+        "MovieId": 2233,
+        "Genre": "Sci-Fi",
+        "Year": 2000
+    },
+    {
+        "Title": "Movie 9",
+        "MovieId": 8782,
+        "Genre": "Drama",
+        "Year": 1987
+    },
+    {
+        "Title": "Movie 10",
+        "MovieId": 4816,
+        "Genre": "Horror",
+        "Year": 1992
+    }
+]

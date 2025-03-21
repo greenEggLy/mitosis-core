@@ -17,3 +17,6 @@ build/
 scripts/*.toml
 scripts/exp
 .DS_Store
+*.pyc
+*.mp4
+*.MOV

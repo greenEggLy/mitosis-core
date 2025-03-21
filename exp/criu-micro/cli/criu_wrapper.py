@@ -2,10 +2,7 @@ import argparse
 import os
 import time
 from functools import wraps
-import syscall_lib
-import bench
 import mmap
-import struct
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-profile", type=int, default=1, help="whether print out the profile data")

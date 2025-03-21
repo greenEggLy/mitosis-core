@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/prctl.h>
+#include <sys/time.h>
 
 
 #ifdef DEBUG
@@ -30,6 +31,12 @@ char *execve_envp[MAX_COMMAND_LENGTH];
 
 static long get_passed_nanosecond(struct timespec *start, struct timespec *end) {
     return NANOSECONDS_IN_SECOND * (end->tv_sec - start->tv_sec) + (end->tv_nsec - start->tv_nsec);
+}
+
+double current_time_in_seconds() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
 /**
@@ -82,7 +89,7 @@ static inline int test_setup_lean_container(char *name, int namespace, char *roo
 
 int main(int argc, char* argv[]) {
     if (argc < 7) {
-        printf("Usage: %s [container name] [/path/to/report_file] [/path/to/rootfs] [command (absolute path)] [command opts]\n", argv[0]);
+        printf("Usage: %s [container name]  [/path/to/rootfs]  [command (absolute path)] [command opts]\n", argv[0]);
         return -1;
     }
     
@@ -90,16 +97,14 @@ int main(int argc, char* argv[]) {
     int parallel = atoi(argv[2]);
     
     char* name = argv[3];
-    char* report = argv[4];
     char* rootfs_path = argv[5];
+    char* report_path = argv[4];
     char* command = argv[6];
 
-    int out_fd = open(report, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (out_fd == -1) {
-        perror("open outputfile error");
+    FILE* report_file = fopen(report_path, "w"); 
+    if(report_file == NULL) {
+        printf("Failed to open %s", report_path);
         return 1;
-    } else {
-        printf("Open result file:%s, fd: %d", report, out_fd);
     }
 
     sleep(1);
@@ -113,7 +118,7 @@ int main(int argc, char* argv[]) {
 
     int argv_index = 0;
     // setup argv array
-    for (int i = 5; i < argc && argv_index < MAX_COMMAND_LENGTH; i++, argv_index++)
+    for (int i = 6; i < argc && argv_index < MAX_COMMAND_LENGTH; i++, argv_index++)
         execve_argv[argv_index] = argv[i];
     execve_argv[argv_index] = NULL;
 
@@ -149,6 +154,10 @@ int main(int argc, char* argv[]) {
     }
 
     clock_gettime(CLOCK_REALTIME, &start);
+   
+    // fprintf(&start_v2, sizeof(double), 1, report_file);
+    
+    // fclose(report_file);
 
     while (count < container_count) {
         if (parallel == 1) {
@@ -158,7 +167,10 @@ int main(int argc, char* argv[]) {
             }
             ns_array[count] = cached_namespace;
         }
+        double start_v2 = current_time_in_seconds();
+        // printf("Start time: %f\n", start_v2);
 
+        size_t written = fprintf(report_file, "%f ", start_v2);
         int pid = test_setup_lean_container(name, cached_namespace, rootfs_path, command, parallel);
         if (parallel == 1) {
             pid_array[count] = pid;
@@ -178,7 +190,7 @@ int main(int argc, char* argv[]) {
     clock_gettime(CLOCK_REALTIME, &now);
 
     long elapsed_time = get_passed_nanosecond(&start, &now);
-    dprintf(out_fd, "total: run %d containers in %.2f second(s)\n", count, elapsed_time / NANOSECONDS_IN_SECOND);
+    printf("total: run %ld containers in %.2f second(s)\n", count, elapsed_time / NANOSECONDS_IN_SECOND);
 
 clean:
     if (parallel == 0) {
