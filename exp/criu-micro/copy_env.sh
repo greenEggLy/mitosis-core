@@ -11,7 +11,12 @@ cp -r imgs $1/imgs
 rm -rf $1/${PWD}
 mkdir -p -m775 $1/${PWD}
 cp -a -r lock $1/${PWD}/ && echo -n 1 > $1/${PWD}/lock
+cp -a -r time $1/${PWD}/ && echo -n 0 > $1/${PWD}/time
 cp -a -r execution.log $1/${PWD}/
+cp -a -r utils $1/${PWD}/
+rm -rf $1/${PWD}/tmp
+mkdir $1/${PWD}/tmp
+
 
 # copy share libraries
 # cp -r /home/xhr/miniconda3/bin/python $1/home/xhr/miniconda3/bin/python
@@ -27,6 +32,7 @@ cp -r /lib/x86_64-linux-gnu/* $1/lib/x86_64-linux-gnu
 
 # copy restore scripts
 cp restore.sh $1/restore.sh
+sudo chmod +x $1/restore.sh
 
 # chmod
 sudo chmod 666 $1/dev/null

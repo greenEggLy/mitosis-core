@@ -1,6 +1,25 @@
 echo -n 0 > lock
-setsid python3 test_.py < /dev/null > execution.log 2>&1 &
-# setsid /home/xhr/miniconda3/bin/python3 test_.py < /dev/null > execution.log 2>&1 &
+echo -n 0 > time
+# setsid python3 test_.py < /dev/null > execution.log 2>&1 &
+# setsid /home/ly/miniconda3/bin/python3 test_.py < /dev/null > execution.log 2>&1 &
+
+case $1 in
+    retwis|1)
+        setsid /home/ly/miniconda3/bin/python3 retwis/main.py < /dev/null > execution.log 2>&1 &
+    ;;
+    video|2)
+        setsid /home/ly/miniconda3/bin/python3 video-classify/main.py < /dev/null > execution.log 2>&1 &
+    ;;
+    movie|3)
+        setsid /home/ly/miniconda3/bin/python3 movie-review/main.py < /dev/null > execution.log 2>&1 &
+    ;;
+    ml|4)
+        setsid /home/ly/miniconda3/bin/python3 ml-pipe/main.py < /dev/null > execution.log 2>&1 &
+    ;;
+    travel|5)
+        setsid /home/ly/miniconda3/bin/python3 travel-reservation/main.py < /dev/null > execution.log 2>&1 &
+    ;;
+esac
 export TARGET_PID=$(pgrep python3)
 echo "TARGET_PID=${TARGET_PID}"
 rm -rf imgs && mkdir imgs
