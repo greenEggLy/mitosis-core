@@ -9,6 +9,7 @@ RUN apt update && apt install -y libcap-dev libnl-3-dev libnet1-dev pkg-config l
 
 RUN rm -rf /var/lib/apt/lists/*
 
+# TODO: to gitee src
 RUN GIT_SSL_NO_VERIFY=1 git clone --branch no_error_for_restore https://github.com/xiehongrui/criu.git
 
 RUN cd criu && rm images/google/protobuf/descriptor.proto && ln -s /usr/include/google/protobuf/descriptor.proto images/google/protobuf/descriptor.proto && make -j $(nproc)
@@ -17,8 +18,17 @@ RUN apt update && apt install -y python3 wget && wget https://bootstrap.pypa.io/
 
 RUN apt update && apt install -y criu
 
-RUN apt update && apt install -y bc && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y bc ffmpeg && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# COPY requirements.txt .
 
-RUN pip install --progress-bar off -r requirements.txt -i https://mirror.sjtu.edu.cn/pypi/web/simple
+# RUN pip install --progress-bar off -r requirements.txt -i https://mirror.sjtu.edu.cn/pypi/web/simple
+
+# RUN mkdir -p /home/ly/
+# RUN export PATH="/home/ly/miniconda3/bin:$PATH"
+RUN cd /root && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &&  sh Miniconda3-latest-Linux-x86_64.sh -b -p /root/miniconda3
+# RUN /root/miniconda3/bin/pip install numpy -i https://pypi.tuna.tsinghua.edu.cn/simple
+# RUN /home/ly/miniconda3/bin/pip install moviepy -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+RUN chmod 775 /root/miniconda3/bin/python3.12 && chmod 775 /root/miniconda3/lib/python3.12/lib-dynload/*.so && chmod 775 /root/miniconda3/lib/*.so* && find /root/miniconda3/lib/python3.12/site-packages -type f -name "*.so*" -exec chmod 775 {} + 
+RUN chmod 664 /root/miniconda3/lib/libgcc_s.so.1

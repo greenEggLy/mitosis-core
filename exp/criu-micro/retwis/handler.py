@@ -1,6 +1,40 @@
 import json
 import time
-from utils import CreatePost, CreateUser
+
+import random
+
+def random_string(length) -> str:
+	characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	return ''.join(random.choice(characters) for _ in range(length))
+
+def CreatePost(max_posts, max_users, post_length) -> dict:
+	print(max_posts)
+	initial_post = {}
+	user_post = {}
+	for i in range(max_posts):
+		timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+		post_id = f"{timestamp}-{i}"
+
+		content = random_string(post_length)
+		initial_post[post_id] = {"timestamp": timestamp, 'content': content}
+
+		username = f"username_{random.randint(1, max_users-1)}"
+		if username not in user_post.keys():
+			user_post[username] = []
+		user_post[username].append(post_id)
+	
+	return initial_post, user_post
+
+def CreateUser(max_users, max_followers) -> dict:
+	user_info = {}
+	for i in range(max_users):
+		username = f"username_{i}"
+		password = f"pwd_{i}"
+		followers = random.randint(1, max_followers)
+		followers = [f"username_{random.randint(1, max_users)}" for _ in range(followers)]
+		user_info[username] = {'password': password, 'followers': followers, 'posts': []}
+	
+	return user_info
 
 def get_input():
     return {
@@ -12,6 +46,8 @@ def get_input():
 	}
 
 def lambda_handler(params):
+	with open("./haha.txt", 'w') as f:
+		f.write("haha\n")
 	start_time = time.time()
 	oa = params['output']
 	max_users = params['max_users']  # 1000000
@@ -47,21 +83,3 @@ def lambda_handler(params):
 		'body': json.dumps(return_val)
 	}
  
-# if __name__ == '__main__':
-#     schedule = {'stage0': ('10.10.1.1', 30040), 'stage1': ('10.10.1.1', 30041), 
-#                         'stage2': ('10.10.1.1', 30042), 'stage3': ('10.10.1.1', 30043),
-#                         'stage4': ('10.10.1.1', 30044), 'stage5': ('10.10.1.1', 30045),
-#                         'stage6': ('10.10.1.1', 30046)}
-#     request_id = "000000"
-#     use_redis_when_remote = True
-#     params = {
-#         'output': f'{request_id}-Retwis/stage0/movie_info', 
-#         'use_redis_when_remote': use_redis_when_remote,
-#         'max_users': 10000,
-#         'max_followers': 500,
-#         'max_posts': 5000,
-#         'post_length': 20,
-#         'schedule': schedule
-#     }
-#     InitUserAndPost(params)
-    # PYTHONPATH=${PYTHONPATH}:/CommunicatingFramework:/retwis python3 retwis/init.py

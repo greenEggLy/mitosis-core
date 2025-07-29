@@ -19,12 +19,17 @@ case $1 in
     travel|5)
         setsid /home/ly/miniconda3/bin/python3 travel-reservation/main.py < /dev/null > execution.log 2>&1 &
     ;;
+    movie2|6)
+        setsid /home/ly/miniconda3/bin/python3 movie-review-arrow/main.py < /dev/null > execution.log 2>&1 & 
+    ;;
+    travel2|7)
+        setsid /home/ly/miniconda3/bin/python3 travel-reservation-arrow/main.py < /dev/null > execution.log 2>&1 & 
 esac
 export TARGET_PID=$(pgrep python3)
 echo "TARGET_PID=${TARGET_PID}"
 rm -rf imgs && mkdir imgs
 sleep 3
-~/mitosis/criu/criu/criu dump --images-dir=./imgs -t ${TARGET_PID} -vvvv -o dump.log
+~/mitosis/criu/criu/criu dump --images-dir=./imgs -t ${TARGET_PID} -v -o dump.log
 # criu dump --images-dir=./imgs -t ${TARGET_PID} -vvvv -o dump.log
 tail -n 1 imgs/dump.log
 echo -n 1 > lock

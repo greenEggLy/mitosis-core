@@ -1,44 +1,43 @@
 
+
 import sys
 path_to_remove = '/home/ly/.local/lib/python3.12/site-packages'
 sys.path = [p for p in sys.path if not p.rstrip('/').endswith(path_to_remove.rstrip('/'))]
+
 def get_input():
-    return {"output": {}, "user_num": 1000000, "path": "./utils/movie.json"}
+    return {"output": {}, "user_num": 1000000, "path": "./utils/movie.arrow"}
 
     
 def warm_start_handler(params):
-    import json
-    import time
-    start = time.time()
-    path = params["path"]
-    with open(path, "r", encoding="utf-8") as file:
-        file_content = file.read()
-        data = json.loads(file_content)
+    import pyarrow as pa
+    file_path = params["path"]
+    try:
+        with pa.memory_map(file_path, 'r') as source:
+            reader = pa.RecordBatchFileReader(source)
+            table = reader.read_all()
+            return table
+    
+    except Exception as e:
+        raise
 
-    end = time.time()
-    print(f"Deserialize json data time: {end-start}")
-    return data
 
 
 def lambda_handler(params, data):
-    import time
     import json
-    # print(str(pa.cpp_version_info))
+    import time
     start_time = time.time()
-    oa = params["output"] 
+    oa = params["output"]
     user_num = params["user_num"]  # 1000000
     start_compute_time = time.time()
-    movie_data = {movie_info["Title"]: movie_info["MovieId"] for movie_info in data}
+    titles = data.column("Title").to_pylist()
+    movie_infos = data.column("MovieId").to_pylist()
+    movie_data = {title: movie_info for (title, movie_info) in zip(titles, movie_infos)}
     user_data = {f"username_{idx}": idx for idx in range(user_num)}
     com_data = {"movie": movie_data, "user": user_data}
     com_data_recommend = {"movie": data, "user": user_data}
 
     end_compute_time = time.time()
     start_output_time = time.time()
-    # md.output(['stage2'], f'{oa}-2', com_data)
-    # md.output(['stage3'], f'{oa}-3', com_data)
-    # md.output(['stage4'], f'{oa}-4', com_data_recommend)
-    # md.output(['stage5'], f'{oa}-5', com_data_recommend)
 
     end_output_time = time.time()
     end_time = time.time()

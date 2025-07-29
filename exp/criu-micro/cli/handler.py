@@ -6,7 +6,7 @@ def get_input():
     return {"output": {}, "user_num": 1000000, "path": "./utils/data.json"}
 
 
-def handler(params):
+def lambda_handler(params):
     start_time = time.time()
     oa = params["output"]
     user_num = params["user_num"]  # 1000000

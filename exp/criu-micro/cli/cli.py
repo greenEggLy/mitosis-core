@@ -55,8 +55,8 @@ if __name__ == "__main__":
 
 
 if __name__ == "__main__":
-    # usage: python cli.py checkpoint --rootfs_path <rootfs_path> [--function <function_name>] [--payload <payload>] [--function-file <function_file>]
-    # usage: python cli.py restore --number <number> --rootfs_path <rootfs_path> [--parallel] [--name <name>] 
+    # usage: python cli.py --action checkpoint --rootfs_path <rootfs_path> [--function <function_name>] [--payload <payload>] [--function-file <function_file>]
+    # usage: python cli.py --action restore --number <number> --rootfs_path <rootfs_path> [--parallel] [--name <name>] 
     parser = argparse.ArgumentParser()
     parser.add_argument("--action", type=str, choices=["checkpoint", "restore"], help="action")
     parser.add_argument("--rootfs_path", type=str, required=True, help="rootfs path")

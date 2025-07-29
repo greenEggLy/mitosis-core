@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
     char* report_path = argv[4];
     char* command = argv[6];
 
-    FILE* report_file = fopen(report_path, "w"); 
+    FILE* report_file = fopen(report_path, "a"); 
     if(report_file == NULL) {
         printf("Failed to open %s", report_path);
         return 1;

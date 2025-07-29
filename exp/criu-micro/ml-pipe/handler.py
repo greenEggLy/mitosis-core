@@ -1,22 +1,10 @@
-from numpy import array
-from numpy import mean
-from numpy import cov
-from numpy.linalg import eig
-from numpy import genfromtxt
-from numpy import concatenate
-from numpy import savetxt
-import numpy as np
-
-import json
-import random
-import time
-import io
-from serverless_framework import WorkerMetadata
-from typing import Dict, Any, Optional
-import numpy as np
-import logging
 
 def lambda_handler(params):
+    from numpy import mean
+    from numpy import cov
+    from numpy.linalg import eig
+    from numpy import genfromtxt
+    from numpy import concatenate
     input = params['input']
     # output = params['output']
 

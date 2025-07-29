@@ -14,7 +14,7 @@ parser.add_argument("-lock_file", type=str, default="lock", help="lock file")
 parser.add_argument("-lock_string", type=str, default="0", help="check the lock file and compare with the first byte of lock string")
 parser.add_argument("-exclude_execution", type=int, default=0,
                     help="Whether exclude the resume stage")
-parser.add_argument("-time_file", type=str, default="time", help="record start and end time")
+parser.add_argument("-time_file", type=str, default="time2", help="record start and end time")
 args, _ = parser.parse_known_args()
 
 profile = args.profile
@@ -70,28 +70,33 @@ def criu_bench_v2(handler):
 
     return wrapper
 
-# with restore start time and end time
-# def criu_bench_v2(handler):
-#    def wait():
-#         with open(lock_file, 'rb') as f:
-#             fd = f.fileno()
-#             mm_lock = mmap.mmap(fd, 0, flags=mmap.MAP_SHARED, prot=mmap.PROT_READ)
-#         while chr(mm_lock[0]) == lock_string:
-#             pass 
+    
+def criu_bench_warm_start(deserialize_handler):
+    def wait():
+        with open(lock_file, 'rb') as f:
+            fd = f.fileno()
+            mm_lock = mmap.mmap(fd, 0, flags=mmap.MAP_SHARED, prot=mmap.PROT_READ)
+        while chr(mm_lock[0]) == lock_string:
+            pass
 
-#     @wraps(handler)
-#     def wrapper(*args, **kwargs):
-#         wait()
-#         end_time = time.time()
-#         with open(time_file, 'r+b') as f:
-#             mm = mmap.mmap(f.fileno(), 0)
-#             double_bytes = struct.pack('d', end_time)
-#             mm[8:16] = double_bytes
-#             mm.close()
-#         if not ret_imm:
-#             handler(*args, **kwargs)
-#         os._exit(0)
-#     return wrapper
+    @wraps(deserialize_handler)
+    def wrapper(*args, **kwargs):
+        wait()
+        if not ret_imm:
+            deserialize_handler(*args, **kwargs)
+        
+        end_time = time.time()
+        
+        with open(time_file, 'a') as f:
+            f.write(str(end_time))
+            f.write(" ")
+            f.close()
+        print(f"wrapper: {end_time}")
+        
+        os._exit(0)
+
+    return wrapper
+
 
 def tick_execution_time(handler):
     """

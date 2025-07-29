@@ -5,6 +5,17 @@ sys.path = [p for p in sys.path if not p.rstrip('/').endswith(path_to_remove.rst
 def get_input():
     return {"output": {}, "user_num": 1000000, "path": "./utils/movie.json"}
 
+def gen_random_data(num_movies = 1_000_000):
+    movies = []
+    for i in range(num_movies):
+        movie = {
+            "Title": f"Movie {i + 1}",
+            "MovieId": random.randint(1000, 9999),
+            "Genre": random.choice(["Action", "Comedy", "Drama", "Horror", "Sci-Fi"]),
+            "Year": random.randint(1980, 2023),
+        }
+        movies.append(movie)
+    return movies
     
 def warm_start_handler(params):
     import json
@@ -20,7 +31,7 @@ def warm_start_handler(params):
     return data
 
 
-def lambda_handler(params, data):
+def lambda_handler(params):
     import time
     import json
     # print(str(pa.cpp_version_info))
@@ -28,6 +39,7 @@ def lambda_handler(params, data):
     oa = params["output"] 
     user_num = params["user_num"]  # 1000000
     start_compute_time = time.time()
+    data = gen_random_data()
     movie_data = {movie_info["Title"]: movie_info["MovieId"] for movie_info in data}
     user_data = {f"username_{idx}": idx for idx in range(user_num)}
     com_data = {"movie": movie_data, "user": user_data}

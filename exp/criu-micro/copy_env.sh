@@ -10,9 +10,13 @@ cp -r imgs $1/imgs
 # make directory for the lock file and copy to specific location, may need modify
 rm -rf $1/${PWD}
 mkdir -p -m775 $1/${PWD}
+echo "" > record
 cp -a -r lock $1/${PWD}/ && echo -n 1 > $1/${PWD}/lock
+cp -a -r record $1/${PWD}/ && echo -n 1 > $1/${PWD}/record
 cp -a -r time $1/${PWD}/ && echo -n 0 > $1/${PWD}/time
+cp -a -r time2 $1/${PWD}/ && echo -n 0 > $1/${PWD}/time2
 cp -a -r execution.log $1/${PWD}/
+cp -a -r tmp.log $1/${PWD}/
 cp -a -r utils $1/${PWD}/
 rm -rf $1/${PWD}/tmp
 mkdir $1/${PWD}/tmp

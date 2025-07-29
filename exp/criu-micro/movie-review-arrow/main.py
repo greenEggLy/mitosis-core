@@ -5,8 +5,6 @@ from criu_wrapper import *
 
 from handler import lambda_handler, get_input, warm_start_handler
 
-import sys
-
 
 @criu_bench_warm_start
 def bench_0(params):

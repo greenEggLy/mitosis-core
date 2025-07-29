@@ -24,14 +24,30 @@ def get_random_date():
         out_day = get_random_day(out_month, 1)
     return [[in_month, in_day], [out_month, out_day]]
 
+def warm_start_handler(params):
+    file_path1 = params["path1"]
+    file_path2 = params["path2"]
+
+    with open(file_path1, 'r') as f:
+        file_content = f.read()
+        data1 = json.loads(file_content)
+    
+    with open(file_path1, 'r') as f:
+        file_content = f.read()
+        data2 = json.loads(file_content)
+
+    return data1, data2
+
 def get_input():
-    return {
-        "request_cnt": 10,
-        "output":{
-            "reserve_loc": "aaa",
-            "reserve_date": "2025-10-10"
-        }
-    }
+    params = {"path1": "/tmp/functions/travel_loc.json", "path2": "/tmp/functions/travel_date.json"}
+    return params
+    # return {
+    #     "request_cnt": 10,
+    #     "output":{
+    #         "reserve_loc": "aaa",
+    #         "reserve_date": "2025-10-10"
+    #     }
+    # }
 
 def lambda_handler(params):
     start_time = time.time()
@@ -91,3 +107,15 @@ def lambda_handler(params):
         'body': json.dumps(return_val)
     }
     
+
+if __name__ == "__main__":
+    import time
+    params = {"path1": "/tmp/functions/travel_loc.json", "path2": "/tmp/functions/travel_date.json"}
+    s = time.time()
+    warm_start_handler(params)
+    e = time.time()
+    print(e-s)
+    # result1 = {col: df1[col].tolist() for col in df1.columns}
+    # result2 = {col: df2[col].tolist() for col in df2.columns}
+    # print(result1)
+    # print(result2)

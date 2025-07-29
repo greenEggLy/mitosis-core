@@ -38,7 +38,7 @@ char* cgroup_directory_prefix[] = {
     "/sys/fs/cgroup/cpu,cpuacct/mitosis/%s",
     "/sys/fs/cgroup/cpuset/mitosis/%s",
     "/sys/fs/cgroup/blkio/mitosis/%s",
-    "/sys/fs/cgroup/memory/mitosis/%s",
+//    "/sys/fs/cgroup/memory/mitosis/%s",
     "/sys/fs/cgroup/systemd/mitosis/%s",
     NULL,
 };
@@ -389,7 +389,7 @@ int add_lean_container_template(char* name, struct ContainerSpec* spec) {
     }
 
     set_cpuset_cgroup(name, spec->cpu_start, spec->cpu_end, spec->numa_start, spec->numa_end);
-    set_memory_cgroup(name, spec->memory_in_mb);
+//    set_memory_cgroup(name, spec->memory_in_mb);
     return 0;
 }
 

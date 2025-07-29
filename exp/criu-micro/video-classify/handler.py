@@ -1,8 +1,37 @@
-import time
-from moviepy.video.io.VideoFileClip import VideoFileClip
-import utils
-from typing import Dict
-import shutil
+
+# serilize VideoFileClip
+def serialize_video_file_clip(filename: str, vfc: VideoFileClip):
+    import time
+    from moviepy.video.io.VideoFileClip import VideoFileClip
+    import utils
+    from typing import Dict
+    import shutil
+
+    import random
+    import logging
+
+    assert isinstance(vfc, VideoFileClip)
+    # filename = tmp_folder + 'tmp' + str(random.randint(0, 10 ** 10)) + '.mp4'
+    # It seems ffmpeg is buggy when there are concurrent requests with the same file name.
+    # We add a random number to the file name to avoid this.
+    vfc.write_videofile(filename, logger=None)
+
+# deserialize VideoFileClip
+def deserialize_video_file_clip(tmp_folder: str, bits: bytes):
+    import time
+    from moviepy.video.io.VideoFileClip import VideoFileClip
+    import utils
+    from typing import Dict
+    import shutil
+
+    import random
+    import logging
+
+    assert isinstance(bits, bytes)
+    filename = tmp_folder + 'tmp' + str(random.randint(0, 10 ** 10)) + '.mp4'
+    with open(filename, 'wb') as f:
+        f.write(bits)
+    return VideoFileClip(filename)
 
 def get_input():
     return {
@@ -19,6 +48,15 @@ def get_input():
     }
 
 def lambda_handler(input):
+    import time
+    from moviepy.video.io.VideoFileClip import VideoFileClip
+    import utils
+    from typing import Dict
+    import shutil
+
+    import random
+    import logging
+
     file_nums = int(input['file_nums'])
     input_pattern = input['input']['pattern']
     chunk_size = int(input['chunk_size'])
@@ -70,9 +108,9 @@ def lambda_handler(input):
             clip_name = output_pattern.replace('[file_id]', str(idx)) \
                 .replace('[chunk_id]', str(cnt))
             tmp_filename = tmp_folder + clip_name
-            utils.serialize_video_file_clip(tmp_filename, clip_vc)
+            serialize_video_file_clip(tmp_filename, clip_vc)
 
-            # md.output(['extract'], clip_name, utils.serialize_video_file_clip(folder, clip_vc))
+            # md.output(['extract'], clip_name, serialize_video_file_clip(folder, clip_vc))
             
             cnt += 1
             start_size += chunk_size
