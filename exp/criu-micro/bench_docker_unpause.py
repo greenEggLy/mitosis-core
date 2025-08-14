@@ -7,7 +7,7 @@ import argparse
 import os
 
 class DockerMountBenchmark:
-    def __init__(self, container_count=3, image="ly/mitosis:v3", prefix="test", mount_dir="/tmp/functions"):
+    def __init__(self, container_count=3, image="criu:latest", prefix="test", mount_dir="/tmp/functions"):
         self.client = docker.from_env()
         self.container_count = container_count
         self.image = image
@@ -25,44 +25,71 @@ class DockerMountBenchmark:
         
 
         test_script_path = os.path.join(self.mount_dir, "test.py")
-        if case == "movie":
+        if case == "mlpipe":
+            with open(test_script_path, "w") as f:
+                f.write("""
+def main():
+    from numpy import genfromtxt
+    filename = "/mnt/functions/train_data.txt"
+    train_data = genfromtxt(filename, delimiter="\t")
+    return train_data
+
+if __name__ == "__main__":
+    main()
+""")
+        elif case == "retwis":
             with open(test_script_path, "w") as f:
                 f.write("""
 def main():
     import json
     import time
-    path = \"/mnt/functions/movie.json\"
-    with open(path, 'r') as file:
-        file_content = file.read()
-        data = json.loads(file_content)
-    return data
+    filename = "/mnt/functions/data.json"
+    with open(filename, "r", encoding="utf-8") as f:
+        data_json = json.load(f)
+    return data_json
 
 if __name__ == "__main__":
     main()
 """)
-        else:
+        elif case == "wordcount":
             with open(test_script_path, "w") as f:
                 f.write("""
 def main():
-    import json
-    import time
-    s = time.time()
-    path1 = \"/tmp/functions/travel_date.json\"
-    path2 = \"/tmp/functions/travel_loc.json\"
-    with open(path1, 'r') as file:
-        file_content = file.read()
-        data1 = json.loads(file_content)
-    with open(path2, 'r') as file:
-        file_content = file.read()
-        data2 = json.loads(file_content)
-    e = time.time()
-    print(e-s)
-    return data1, data2
+    word = ''
+    result = []
+    text = \"Hello hahaha apple king never hahaha bad apple\" * 500000
+    for ch in text:
+        if ch.isalnum():
+            word += ch.lower()
+        elif word:
+            result.append(word)
+            word = ''
+    if word:
+        result.append(word)
+    return result
 
 if __name__ == "__main__":
     main()
 """)
-        
+                
+        elif case == "svd":
+            with open(test_script_path, "w") as f:
+                f.write("""
+def main():
+    import imageio.v2 as imageio
+    import numpy as np
+    img_path = "/mnt/functions/test.jpg"
+    k = 50
+    img = imageio.imread(img_path)
+    if img.ndim == 3: 
+        img = np.dot(img[..., :3], [0.2989, 0.5870, 0.1140])
+    U, S, VT = np.linalg.svd(img, full_matrices=False)
+    img_recon = np.dot(U[:, :k], np.dot(np.diag(S[:k]), VT[:k, :]))
+    return img_recon
+
+if __name__ == "__main__":
+    main()
+""")
         os.chmod(test_script_path, 0o755)  # 确保脚本有执行权限
         for i in range(1, self.container_count + 1):
             container = self.client.containers.run(
@@ -70,6 +97,7 @@ if __name__ == "__main__":
                 name=f"{self.prefix}_{i}",
                 command=f"sleep infinity",  # 容器启动后执行的命令
                 detach=True,
+                privileged=True,
                 volumes={
                     self.mount_dir: {
                         'bind': '/mnt/functions',
@@ -103,7 +131,7 @@ if __name__ == "__main__":
             start = time.perf_counter()
             container.unpause()
             unpause_time = time.perf_counter()
-            exit_code, output = container.exec_run("python /mnt/functions/test.py")
+            exit_code, output = container.exec_run("/root/miniconda3/bin/python /mnt/functions/test.py")
             if exit_code == 0:
                 print(f"{container.name}: {output}")
             else:
@@ -135,9 +163,9 @@ if __name__ == "__main__":
         container.unpause()
         unpause_time = time.perf_counter()
         # print(f"{container.name} unpause time {unpause_time}")
-        exit_code, output = container.exec_run("python /mnt/functions/test.py")
+        exit_code, output = container.exec_run("/root/miniconda3/bin/python3 /mnt/functions/test.py")
         if exit_code != 0:
-            print(f"{container.name} exit code: {exit_code}")
+            print(f"{container.name} exit code: {exit_code}, output: {output}")
         
         end = time.perf_counter()
         exec_time = end - unpause_time
@@ -163,11 +191,6 @@ if __name__ == "__main__":
         exec_times = []
         
         for result in results:
-        #     print(f"\n{result['name']} 结果:")
-        #     for line in result['output']:
-        #         print(f"  {line}")
-        #     print(f"  总耗时: {result['total_time']:.2f} 秒")
-            
             if result['exec_time'] is not None:
             #     print(f"  脚本执行时间: {result['exec_time']:.2f} 秒")
                 exec_times.append(result['exec_time'])
@@ -204,18 +227,18 @@ if __name__ == "__main__":
     parser.add_argument("--count", type=int, default=3, help="测试容器数量")
     parser.add_argument("--image", default="ly/mitosis:v3", help="使用的Docker镜像")
     parser.add_argument("--prefix", default="test", help="容器名前缀")
-    parser.add_argument("--mount", default="/tmp/functions", help="要挂载的本地目录路径")
+    parser.add_argument("--mount", default="/tmp", help="要挂载的本地目录路径")
     parser.add_argument("--mode", choices=["serial", "parallel", "both"], default="both",
                       help="测试模式: serial(串行), parallel(并行), both(两者)")
     parser.add_argument("--workers", type=int, default=4,
                       help="并行测试时的worker数量")
-    parser.add_argument("--case", choices=["movie", "travel"])
+    parser.add_argument("--case", choices=["mlpipe", "wordcount", "svd", "retwis"])
     
     args = parser.parse_args()
     
     benchmark = DockerMountBenchmark(
         container_count=args.count,
-        image=args.image,
+        image="criu:latest",
         prefix=args.prefix,
         mount_dir=args.mount
     )

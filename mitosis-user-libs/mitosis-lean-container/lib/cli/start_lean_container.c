@@ -190,7 +190,7 @@ int main(int argc, char* argv[]) {
     clock_gettime(CLOCK_REALTIME, &now);
 
     long elapsed_time = get_passed_nanosecond(&start, &now);
-    printf("total: run %ld containers in %.2f second(s)\n", count, elapsed_time / NANOSECONDS_IN_SECOND);
+    // printf("total: run %ld containers in %.2f second(s)\n", count, elapsed_time / NANOSECONDS_IN_SECOND);
 
 clean:
     if (parallel == 0) {

@@ -2,10 +2,9 @@ import argparse
 import os
 import time
 from functools import wraps
-import syscall_lib
-import bench
+import sys
 import mmap
-import struct
+sys.stdout.reconfigure(line_buffering=True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-profile", type=int, default=1, help="whether print out the profile data")
@@ -44,6 +43,15 @@ def criu_bench(handler):
 
     return wrapper
 
+def safe_write_atomic(path: str, data: str):
+    b = data.encode("utf-8", errors="replace")
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
+    try:
+        os.write(fd, b)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
     
 def criu_bench_v2(handler):
     def wait():
@@ -56,12 +64,12 @@ def criu_bench_v2(handler):
     @wraps(handler)
     def wrapper(*args, **kwargs):
         wait()
-        end_time = time.time()
         
         with open(time_file, 'a') as f:
-            f.write(str(end_time))
+            f.write(str(time.time()))
             f.write(" ")
             f.close()
+        #safe_write_atomic(time_file, str(time.time()))
             
         if not ret_imm:
             handler(*args, **kwargs)
@@ -85,13 +93,10 @@ def criu_bench_warm_start(deserialize_handler):
         if not ret_imm:
             deserialize_handler(*args, **kwargs)
         
-        end_time = time.time()
-        
         with open(time_file, 'a') as f:
-            f.write(str(end_time))
+            f.write(str(time.time()))
             f.write(" ")
             f.close()
-        print(f"wrapper: {end_time}")
         
         os._exit(0)
 

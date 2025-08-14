@@ -15,7 +15,7 @@ def export_image(image_name, path):
     container = subprocess.Popen(['docker', 'export', image_name], stdout=subprocess.PIPE)
     subprocess.check_output(['tar', '-C', path, '-xf', '-'], stdin=container.stdout)
     # clean the docker container
-    subprocess.run(['docker', 'rm', '-f', image_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    #subprocess.run(['docker', 'rm', '-f', image_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def build_image(app_path, image_name):
     dockerfile = os.path.join(app_path, 'Dockerfile')

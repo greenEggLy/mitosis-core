@@ -11,6 +11,7 @@ cp -r imgs $1/imgs
 rm -rf $1/${PWD}
 mkdir -p -m775 $1/${PWD}
 echo "" > record
+echo -n "" > time2
 cp -a -r lock $1/${PWD}/ && echo -n 1 > $1/${PWD}/lock
 cp -a -r record $1/${PWD}/ && echo -n 1 > $1/${PWD}/record
 cp -a -r time $1/${PWD}/ && echo -n 0 > $1/${PWD}/time
